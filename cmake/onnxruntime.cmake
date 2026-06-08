@@ -43,3 +43,8 @@ target_include_directories(onnxruntime INTERFACE "${onnxruntime_INCLUDE_DIRS}")
 # Avendish builds with -fno-exceptions/-fno-rtti; make the onnxruntime C++ API match.
 target_compile_definitions(onnxruntime INTERFACE ORT_NO_EXCEPTIONS=1)
 add_library(onnxruntime::onnxruntime ALIAS onnxruntime)
+
+# The dump/standalone executables link onnxruntime and run during the build; make the
+# shared library findable (CI forces install-rpath). Set before the targets are created.
+list(APPEND CMAKE_BUILD_RPATH "${onnxruntime_SOURCE_DIR}/lib")
+list(APPEND CMAKE_INSTALL_RPATH "${onnxruntime_SOURCE_DIR}/lib")
