@@ -1,36 +1,40 @@
-cmake_minimum_required(VERSION 3.13 FATAL_ERROR)
+cmake_minimum_required(VERSION 3.24 FATAL_ERROR)
 
 project(MyOnnx CXX)
 
-include(dependencies.cmake)
+# Use the Avendish the host already provides (e.g. ossia score); otherwise fetch it.
+# The same CMakeLists builds this as an ossia/score add-on or as a standalone object.
+find_package(Avendish QUIET)
+if(NOT Avendish_FOUND)
+  include(FetchContent)
+  FetchContent_Declare(
+    Avendish
+    GIT_REPOSITORY "https://github.com/celtera/avendish"
+    GIT_TAG 49ba4e491e3ac1c9c775bdc911749f6328fa8b52)
+  FetchContent_Populate(Avendish)
+  list(APPEND CMAKE_PREFIX_PATH "${avendish_SOURCE_DIR}")
+  find_package(Avendish REQUIRED)
+endif()
+
+# Downloads the prebuilt onnxruntime and exposes onnxruntime::onnxruntime.
 include(cmake/onnxruntime.cmake)
 
-add_library(MyOnnxProcessor STATIC
-  src/Model.cpp
-  src/Model.hpp
-  src/Processor.hpp
-)
-target_link_libraries(MyOnnxProcessor PUBLIC onnxruntime::onnxruntime)
+avnd_addon_init(NAME MyOnnx)
 
-# avnd_make_object instantiates the data / message back-ends (no audio plug-in formats):
-# ossia, Max/MSP, Pure Data, Python, TouchDesigner (CHOP message), Godot.
-avnd_make_object(
-  TARGET MyOnnxProcessor
-  MAIN_FILE "${CMAKE_CURRENT_SOURCE_DIR}/src/Processor.hpp"
-  MAIN_CLASS MyOnnxProcessor
+# CATEGORY object: ossia, Max/MSP, Pure Data, Python, TouchDesigner (CHOP message),
+# Godot. DEPENDENCIES onnxruntime::onnxruntime is linked so it propagates to the score
+# base target and to every standalone back-end (each compiles the onnxruntime C++ API
+# directly). In a score build only the ossia process is produced.
+avnd_addon_object(
+  BASE MyOnnx
   C_NAME my_onnx_processor
-)
+  CLASS MyOnnxProcessor
+  CATEGORY object
+  DEPENDENCIES onnxruntime::onnxruntime
+  MAIN_FILE "${CMAKE_CURRENT_SOURCE_DIR}/src/Processor.hpp"
+  SOURCES
+    src/Model.cpp
+    src/Model.hpp
+    src/Processor.hpp)
 
-# Each back-end compiles the header (and thus the onnxruntime C++ API) directly, so it
-# must see onnxruntime's headers and link its library.
-foreach(suffix max pd CHOP_MESSAGE_td NODE_godot python standalone example_host dump ossia)
-  if(TARGET MyOnnxProcessor_${suffix})
-    target_link_libraries(MyOnnxProcessor_${suffix} PRIVATE onnxruntime::onnxruntime)
-  endif()
-endforeach()
-
-# Workaround: avnd_make_godot doesn't always resolve the godot-cpp target, so re-link it
-# here to propagate godot-cpp's generated include dirs (cf. the other templates).
-if(TARGET MyOnnxProcessor_NODE_godot AND TARGET godot-cpp)
-  target_link_libraries(MyOnnxProcessor_NODE_godot PRIVATE godot-cpp)
-endif()
+avnd_addon_finalize(NAME MyOnnx UUID 2cd49539-0cfe-4e43-bade-16d718ebc747 VERSION 1.0.0)
