@@ -13,7 +13,7 @@ It is the ML counterpart of the
 
 ## What gets built
 
-`avnd_make_object(...)` instantiates the object back-ends — **not** the audio plug-in
+`avnd_addon_object(... CATEGORY object)` instantiates the object back-ends — **not** the audio plug-in
 formats (VST3 / CLAP):
 
 | Back-end | SDK required |

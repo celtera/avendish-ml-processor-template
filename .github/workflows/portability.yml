@@ -1,0 +1,27 @@
+name: Portability
+
+on:
+  pull_request:
+  push:
+    branches: [main, master]
+
+concurrency:
+  group: ${{ github.workflow }}-portability-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  smoke:
+    uses: ossia/actions/.github/workflows/avnd-portability.yml@master
+    secrets: inherit
+    with:
+      # This addon links onnxruntime, whose prebuilt C++ release only covers
+      # desktop (win-x64 / macos-arm64 / linux-x64+aarch64). Restrict the
+      # portability matrix to the lanes where onnxruntime is available: the
+      # Linux + macOS compilers. (windows_msvc builds x64+arm64 in one lane
+      # and arm64 has no onnxruntime, so it's off too.)
+      windows_msvc: false
+      windows_mingw: false
+      freebsd: false
+      wasm: false
+      android: false
+      ios: false

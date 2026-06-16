@@ -1,0 +1,25 @@
+name: Build
+
+on:
+  pull_request:
+  push:
+    branches: [main, master]
+    tags: ['v*']
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  ci:
+    uses: ossia/actions/.github/workflows/avnd-addon.yml@master
+    secrets: inherit
+    with:
+      # ONNX inference object back-ends. wasm omitted: onnxruntime ships no
+      # WebAssembly C++ build (cmake/onnxruntime.cmake only covers
+      # win-x64 / macos-arm64 / linux-x64+aarch64).
+      pd: true
+      max: true
+      python: true
+      touchdesigner: true
+      godot: true
