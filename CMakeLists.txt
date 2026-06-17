@@ -40,4 +40,4 @@ avnd_addon_object(
     src/Model.hpp
     src/Processor.hpp)
 
-avnd_addon_finalize(NAME MyOnnx UUID 2cd49539-0cfe-4e43-bade-16d718ebc747 VERSION 1.0.0)
+avnd_addon_finalize(NAME MyOnnx UUID 2cd49539-0cfe-4e43-bade-16d718ebc747 VERSION 1)
