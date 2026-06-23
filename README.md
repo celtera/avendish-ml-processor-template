@@ -1,5 +1,7 @@
 # Avendish ML / ONNX inference template
 
+[![Build](https://github.com/celtera/avendish-ml-processor-template/actions/workflows/builds.yaml/badge.svg)](https://github.com/celtera/avendish-ml-processor-template/actions/workflows/builds.yaml)
+
 A canonical template for making **ONNX inference** objects with
 [Avendish](https://github.com/celtera/avendish): a single C++ object that runs a `.onnx`
 model with [onnxruntime](https://onnxruntime.ai/) and is compiled, without rewrite, to
